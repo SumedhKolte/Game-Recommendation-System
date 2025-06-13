@@ -5,14 +5,28 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from collections import Counter
 import requests
+import io
 
 
 @st.cache_data
 def load_data():
-    # Replace with your hosted file URL
-    URL = "https://drive.google.com/file/d/18Bvn9Hs7nEeDrxISBGIV_yfbIwMWCRhC/view?usp=drive_link/games.csv"
+    FILE_ID = "18Bvn9Hs7nEeDrxISBGIV_yfbIwMWCRhC"
+    URL = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
+    
     try:
-        df = pd.read_csv(URL)
+        # Handle large file download
+        session = requests.Session()
+        response = session.get(URL, stream=True)
+        
+        # Check if there's a download warning
+        for key, value in response.cookies.items():
+            if key.startswith('download_warning'):
+                params = {'id': FILE_ID, 'confirm': value}
+                response = session.get(URL, params=params)
+                break
+                
+        # Read the CSV directly from the response content
+        df = pd.read_csv(io.StringIO(response.content.decode('utf-8')))
         return df
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
