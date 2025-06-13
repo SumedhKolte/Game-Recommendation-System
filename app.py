@@ -4,13 +4,24 @@ import difflib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from collections import Counter
+import requests
+
+
+@st.cache_data
+def load_data():
+    # Replace with your hosted file URL
+    URL = "https://drive.google.com/file/d/18Bvn9Hs7nEeDrxISBGIV_yfbIwMWCRhC/view?usp=drive_link/games.csv"
+    try:
+        df = pd.read_csv(URL)
+        return df
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+        return None
 
 
 # --- Data Loading and Preprocessing ---
 # Load your game dataset 
-# --- Data Loading and Preprocessing ---
-# Load your game dataset 
-df = pd.read_csv('games.csv')
+df = load_data()
 
 # Clean data - remove rows with missing values in important columns
 df = df.dropna(subset=['Name', 'Tags', 'Publishers', 'Developers', 'Genres', 'Categories'])
